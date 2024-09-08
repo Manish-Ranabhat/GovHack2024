@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accident Prediction</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/prediction.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    
+    <header class="sticky-header">
+        <div class="container">
+            <h1>Open Road Crash Data Victoria</h1>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('hotspots') }}">Crash Hotspot Analysis</a></li>
+                    <li><a href="{{ url_for('prediction') }}">Data Insights</a></li>
+                    <li><a href="#about">About Us</a></li>
+                </ul>
+            </nav>
+    </header>
+    </header>
+<h2>Accident Prediction Based on Location</h2>
+
+<!-- Form to input location name -->
+<form id="prediction-form">
+    <label for="location_name">Location Name:</label>
+    <input type="text" id="location_name" name="location_name" placeholder="Enter a location (e.g., Melbourne)" required>
+    <button type="submit">Get Accident Prediction</button>
+</form>
+
+<!-- Map container -->
+<div id="map" style="height: 400px;"></div>
+
+<!-- Table to display the prediction results -->
+<table border="1">
+    <thead>
+        <tr>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Predicted Crashes</th>
+        </tr>
+    </thead>
+    <tbody id="results-table-body">
+        <!-- The result rows will be inserted here -->
+    </tbody>
+</table>
+
+<!-- Script to handle form submission and map update -->
+<script>
+    // Initialize the map with Leaflet.js
+    var map = L.map('map').setView([-37.8136, 144.9631], 12); // Default view (Melbourne)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+
+    document.getElementById('prediction-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const locationName = document.getElementById('location_name').value;
+
+        // Send a POST request to /predict-accident with the location name
+        fetch('/predict-accident', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ location_name: locationName }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Extract latitude, longitude, and prediction data
+            const latitude = data.latitude;
+            const longitude = data.longitude;
+            const prediction = data.prediction;
+            const accidentProbability = data.accident_probability;
+
+            // Update the map to the new location
+            map.setView([latitude, longitude], 14);
+            
+            // Add a marker to the map
+            L.marker([latitude, longitude]).addTo(map)
+                .bindPopup(`<b>${data.location}</b><br>Predicted Crashes: ${prediction} <br> Probability: ${accidentProbability}`)
+                .openPopup();
+
+            // Update the prediction result in a table
+            const tableBody = document.getElementById('results-table-body');
+            tableBody.innerHTML = `
+                <tr>
+                    <td>${latitude}</td>
+                    <td>${longitude}</td>
+                    <td>${prediction} (Probability: ${accidentProbability})</td>
+                </tr>
+            `;
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+<footer>
+    <div class="footer-container">
+        <div class="footer-section">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#hotspots">Crash Hotspot Analysis</a></li>
+                <li><a href="#preventive">Preventive Measures</a></li>
+                <li><a href="#prediction">Accident Prediction</a></li>
+                <li><a href="#about">About Us</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h3>Contact Us</h3>
+            <p>Email: <a href="mailto:info@crashdatavictoria.com">info@crashdatavictoria.com</a></p>
+            <p>Phone: +61 3 1234 5678</p>
+            <div class="social-media">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
+
+        <div class="footer-section">
+            <h3>Subscribe to Our Newsletter</h3>
+            <form action="#" method="POST" class="newsletter-form">
+                <input type="email" name="email" placeholder="Enter your email" required>
+                <button type="submit" class="btn-secondary">Subscribe</button>
+            </form>
+        </div>
+
+        <div class="footer-section">
+            <h3>Legal</h3>
+            <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Disclaimer</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2024 Open Road Crash Data Victoria. All rights reserved.</p>
+    </div>
+</footer>
+</body>
+</html>

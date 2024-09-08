@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Road Crash Data Victoria</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <h1>Open Road Crash Data Victoria</h1>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('hotspots') }}">Crash Hotspot Analysis</a></li>
+                    <li><a href="#preventive">Preventive Measures</a></li>
+                    <li><a href="{{ url_for('prediction') }}">Data Insights</a></li>
+                    <li><a href="#about">About Us</a></li>
+                </ul>
+            </nav>
+    </header>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="hero-content">
+                <h2>Improve Road Safety with Data Insights</h2>
+                <p>Discover accident hotspots, prevent crashes, and stay safe on the roads of Victoria.</p>
+                <a href="#hotspots" class="btn-primary">Explore Hotspots</a>
+            </div>
+        </section>
+
+        <!-- Map section with loading spinner -->
+        <section id="hotspots">
+            <h2>Crash Hotspots</h2>
+            <div id="map" class="map-container"></div>
+            <div class="loader"></div> <!-- Loading spinner for map -->
+            
+        </section>
+
+        <section< <div class="button-container">
+            <button class="btn-report" onclick="window.location.href='{{ url_for('report') }}'">Report an Incident</button>
+        </div></section>
+
+        
+        <!-- Preventive Measures section -->
+        <section id="preventive">
+            <h2>Preventive Measures</h2>
+            <div class="preventive-container">
+                <div class="preventive-item" onclick="showDetail('seatbelt')">
+                    <img src="{{ url_for('static', filename='images/seatbelt-icon.png') }}" alt="Seat Belt" loading="lazy"/>
+                    <h3>Wear Seat Belts</h3>
+                    <p>Click to learn more</p>
+                </div>
+                <div class="preventive-item" onclick="showDetail('speed')">
+                    <img src="{{ url_for('static', filename='images/speed-icon.png') }}" alt="Speed Limit" loading="lazy"/>
+                    <h3>Follow Speed Limits</h3>
+                    <p>Click to learn more</p>
+                </div>
+                <div class="preventive-item" onclick="showDetail('distraction')">
+                    <img src="{{ url_for('static', filename='images/distraction-icon.png') }}" alt="Distractions" loading="lazy"/>
+                    <h3>Avoid Distractions</h3>
+                    <p>Click to learn more</p>
+                </div>
+                <div class="preventive-item" onclick="showDetail('weather')">
+                    <img src="{{ url_for('static', filename='images/weather-icon.png') }}" alt="Weather" loading="lazy"/>
+                    <h3>Be Weather Aware</h3>
+                    <p>Click to learn more</p>
+                </div>
+            </div>
+            <div id="preventive-detail" class="preventive-detail"></div>
+        </section>
+        </section>
+
+
+        <footer>
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#hotspots">Crash Hotspot Analysis</a></li>
+                        <li><a href="#preventive">Preventive Measures</a></li>
+                        <li><a href="#prediction">Accident Prediction</a></li>
+                        <li><a href="#about">About Us</a></li>
+                    </ul>
+                </div>
+    
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <p>Email: <a href="mailto:info@crashdatavictoria.com">info@crashdatavictoria.com</a></p>
+                    <p>Phone: +61 3 1234 5678</p>
+                    <div class="social-media">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+    
+                <div class="footer-section">
+                    <h3>Subscribe to Our Newsletter</h3>
+                    <form action="#" method="POST" class="newsletter-form">
+                        <input type="email" name="email" placeholder="Enter your email" required>
+                        <button type="submit" class="btn-secondary">Subscribe</button>
+                    </form>
+                </div>
+    
+                <div class="footer-section">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Disclaimer</a></li>
+                    </ul>
+                </div>
+            </div>
+    
+            <div class="footer-bottom">
+                <p>&copy; 2024 Open Road Crash Data Victoria. All rights reserved.</p>
+            </div>
+        </footer>
+    >
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Loading spinner visible before map loads
+            var loader = document.querySelector('.loader');
+            var map = L.map('map').setView([-37.8136, 144.9631], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            L.marker([-37.8136, 144.9631]).addTo(map)
+                .bindPopup('Melbourne, Victoria')
+                .openPopup();
+            
+            // Remove loader once map is ready
+            map.whenReady(() => {
+                loader.style.display = 'none';
+            });
+        });
+
+        function showDetail(measure) {
+            const detailDiv = document.getElementById('preventive-detail');
+            let content = '';
+            switch (measure) {
+                case 'seatbelt':
+                    content = '<h3>Wear Seat Belts</h3><p>Wearing seat belts significantly reduces the risk of injury during a crash.</p>';
+                    break;
+                case 'speed':
+                    content = '<h3>Follow Speed Limits</h3><p>Adhering to speed limits helps maintain vehicle control and reduces accidents.</p>';
+                    break;
+                case 'distraction':
+                    content = '<h3>Avoid Distractions</h3><p>Distractions like phone use can lead to accidents. Stay focused.</p>';
+                    break;
+                case 'weather':
+                    content = '<h3>Be Weather Aware</h3><p>Adapt your driving according to weather conditions for safer journeys.</p>';
+                    break;
+                default:
+                    content = '<p>Select a preventive measure to see more details.</p>';
+            }
+            detailDiv.innerHTML = content;
+        }
+    </script>
+</body>
+</html>
